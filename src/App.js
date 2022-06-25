@@ -4,7 +4,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import theme from "./theme";
 import NotFound from "./pages/NotFound";
-import MainPage from "./pages/main/MainPage";
+import HomePage from "./pages/home/HomePage";
 import LoginPage from "./pages/login/LoginPage";
 import TodolistPage from "./pages/todolist/TodolistPage";
 import PostPage from "./pages/post/PostPage";
@@ -19,7 +19,7 @@ function App() {
         <Suspense fallback={<div>Loading...</div>}>
           <Router>
             <Routes>
-              <Route path="/" element={<MainPage />} />
+              <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/todolist" element={<TodolistPage />} />
               <Route path="/post" element={<PostPage />} />
