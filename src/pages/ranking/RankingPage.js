@@ -1,52 +1,37 @@
 import React, { useEffect, useState } from "react";
-import { TextField, Typography, Button, Stack, Box } from "@mui/material";
+import {
+  TextField,
+  Typography,
+  Button,
+  Stack,
+  Box,
+  Checkbox,
+} from "@mui/material";
 import { makeStyles, styled } from "@mui/styles";
 import { HeartIcon } from "@heroicons/react/solid";
 import Godsaeng from "../../assets/images/Godsaeng.png";
 import { ChevronLeftIcon } from "@heroicons/react/outline";
+import axios from "axios";
 
 function RankingPage() {
   const classes = useStyles();
 
   const [detailShow, setDetailShow] = useState(false);
   const [detailId, setDetailId] = useState(0);
-  const [detailData, setDetailData] = useState({
-    id: 1,
-    uid: "test",
-    username: "GDG해커톤",
-    title: "제목 테스트",
-    godSaeng: true,
-    likeCnt: 98,
-    tagList: ["개발", "태그2", "태그3"],
-    description: "게시글 내용입니다~",
-  });
+  const [detailData, setDetailData] = useState({});
 
   useEffect(() => {
     if (detailId) {
-      // setDetailData();
+      axios
+        .get(`http://15.164.228.89:8080/api/v1/post/${detailId}`)
+        .then((response) => {
+          console.log(response.data?.resopnse);
+          setDetailData(response.data?.response);
+        });
     }
   }, [detailId]);
 
-  const [postList, setPostList] = useState([
-    {
-      id: 1,
-      uid: "test",
-      username: "GDG해커톤",
-      title: "제목 테스트",
-      godSaeng: true,
-      likeCnt: 98,
-      tagList: ["개발", "태그2", "태그3"],
-    },
-    {
-      id: 2,
-      uid: "test",
-      username: "GDG해커톤",
-      title: "제목 테스트",
-      godSaeng: false,
-      likeCnt: 98,
-      tagList: ["개발", "태그2", "태그3"],
-    },
-  ]);
+  const [postList, setPostList] = useState([]);
   const tags = [
     { name: "전체", value: "" },
     { name: "개발", value: "DEV" },
@@ -55,12 +40,29 @@ function RankingPage() {
     { name: "그림", value: "DRAWING" },
   ];
 
+  const tagsENtoKR = {
+    "": "전체",
+    DEV: "개발",
+    SPORT: "스포츠",
+    STUDY: "공부",
+    DRAWING: "그림",
+  };
+
   const [currentTag, setCurrentTag] = useState("");
 
   useEffect(() => {
     // TODO: GET rank
-    // setPostList([]);
-  }, [tags]);
+    axios
+      .get("http://15.164.228.89:8080/api/v1/post/rank", {
+        params: {
+          tag: currentTag,
+        },
+      })
+      .then((response) => {
+        // response.data.response.map((v) => (v.tagList = ["test", "test1"]));
+        setPostList(response.data?.response);
+      });
+  }, [currentTag]);
 
   const handleTag = (value) => (event) => {
     setCurrentTag(value);
@@ -70,7 +72,7 @@ function RankingPage() {
   return (
     <div className={classes.container}>
       {detailShow ? (
-        <>
+        <div style={{ paddingBottom: "60px" }}>
           <Stack justifyContent="space-between" pb="1rem" gap="1rem">
             <div
               style={{ display: "flex", alignItems: "center", gap: "2px" }}
@@ -80,10 +82,10 @@ function RankingPage() {
               <Typography variant="h4">게시글</Typography>
             </div>
           </Stack>
-          {detailData && (
+          {detailData && detailData.post && (
             <>
               <Typography fontSize="20px" fontWeight="medium" color="#1E293B">
-                {detailData.title}
+                {detailData.post.title}
               </Typography>
               <Stack
                 direction="row"
@@ -91,7 +93,7 @@ function RankingPage() {
                 sx={{ mt: "6px" }}
               >
                 <Typography color="#0F172A" fontSize="14px">
-                  {detailData.username}
+                  {detailData.userName}
                 </Typography>
                 <div
                   style={{
@@ -102,31 +104,37 @@ function RankingPage() {
                   }}
                 >
                   <HeartIcon style={{ width: "16px", height: "16px" }} />
-                  <Typography fontSize="14px">{detailData.likeCnt}</Typography>
+                  <Typography fontSize="14px">
+                    {detailData.post.likeCnt}
+                  </Typography>
                 </div>
               </Stack>
-              <Box
-                backgroundColor="#F8FAFC"
-                sx={{
-                  p: "6rem",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: "12px",
-                  mt: "12px",
-                }}
-              >
-                {detailData.imgUrl && (
-                  <img src={detailData.imgUrl} width="100%" />
-                )}
-              </Box>
+              {detailData.post.imgUrl ? (
+                <img
+                  src={detailData.post.imgUrl}
+                  width="100%"
+                  style={{ marginTop: "12px", borderRadius: "12px" }}
+                />
+              ) : (
+                <Box
+                  backgroundColor="#F8FAFC"
+                  sx={{
+                    p: "6rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "12px",
+                    mt: "12px",
+                  }}
+                ></Box>
+              )}
               <Stack sx={{ mt: "12px" }}>
                 <Typography
                   color="#0F172A"
                   fontSize="16px"
                   sx={{ mb: "4px", fontWeight: "lighter" }}
                 >
-                  {detailData.description}
+                  {detailData.post.description}
                 </Typography>
                 <Typography
                   style={{
@@ -138,16 +146,75 @@ function RankingPage() {
                     fontWeight: "lighter",
                   }}
                 >
-                  {detailData.tagList.map((v) => (
-                    <div># {v}</div>
+                  {detailData.tags.map((v) => (
+                    <># {tagsENtoKR[v]}</>
                   ))}
                 </Typography>
               </Stack>
+              {detailData.taskEntityList.map((v) => {
+                return (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      border: "0.5px solid #E2E8F0",
+                      borderRadius: "12px",
+                      marginBottom: "20px",
+                      marginTop: "20px",
+                    }}
+                  >
+                    <Stack direction="row" style={{ alignItems: "center" }}>
+                      <Checkbox value={v.checkBox} disabled />
+                      <Typography fontSize="15px" color="#0F172A">
+                        {v.title}
+                      </Typography>
+                    </Stack>
+                    {v.imgUrl ? (
+                      <img src={v.imgUrl} width="100%" />
+                    ) : (
+                      <Box
+                        backgroundColor="#F8FAFC"
+                        sx={{
+                          p: "6rem",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      ></Box>
+                    )}
+                    <div
+                      style={{
+                        padding: "0px 12px",
+                      }}
+                    >
+                      <Typography
+                        fontSize="16px"
+                        sx={{ pt: "8px", pb: "4px", fontWeight: "medium" }}
+                        color="#1E293B"
+                      >
+                        {v.title}
+                      </Typography>
+                      <Typography
+                        style={{
+                          display: "flex",
+                          gap: "4px",
+                          color: "#475569",
+                          paddingBottom: "8px",
+                          fontSize: "14px",
+                          fontWeight: "lighter",
+                        }}
+                      >
+                        # {tagsENtoKR[v.tag]}
+                      </Typography>
+                    </div>
+                  </div>
+                );
+              })}
             </>
           )}
-        </>
+        </div>
       ) : (
-        <>
+        <div style={{ paddingBottom: "60px" }}>
           <Stack justifyContent="space-between" pb="1rem" gap="1rem">
             <Typography variant="h4">실시간 랭킹</Typography>
             <div style={{ overflowX: "auto", whiteSpace: "pre" }}>
@@ -213,7 +280,7 @@ function RankingPage() {
                           : null}
                       </div>
                       <Typography fontSize="12px" color="#0F172A">
-                        {v.post.username}
+                        {v.userName}
                       </Typography>
                     </div>
                     <div
@@ -228,17 +295,19 @@ function RankingPage() {
                       <Typography fontSize="12px">{v.post.likeCnt}</Typography>
                     </div>
                   </div>
-                  <Box
-                    backgroundColor="#F8FAFC"
-                    sx={{
-                      p: "6rem",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {v.imgUrl && <img src={v.post.imgUrl} width="100%" />}
-                  </Box>
+                  {v.post.imgUrl ? (
+                    <img src={v.post.imgUrl} width="100%" />
+                  ) : (
+                    <Box
+                      backgroundColor="#F8FAFC"
+                      sx={{
+                        p: "6rem",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    ></Box>
+                  )}
                   <div
                     style={{
                       display: "flex",
@@ -277,7 +346,7 @@ function RankingPage() {
                 </div>
               );
             })}
-        </>
+        </div>
       )}
     </div>
   );
