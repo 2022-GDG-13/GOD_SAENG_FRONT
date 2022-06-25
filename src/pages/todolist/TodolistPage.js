@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Typography, Button, Stack, Box, Checkbox, Dialog, DialogContent, DialogActions, DialogTitle, IconButton, Chip } from '@mui/material';
+import { TextField, Typography, Button, Stack, Box, Checkbox, Dialog, DialogContent, DialogActions, DialogTitle, IconButton } from '@mui/material';
 import { makeStyles, styled } from '@mui/styles';
 import { PlusIcon, ChevronRightIcon, XIcon } from '@heroicons/react/solid';
 import { CloudUploadIcon } from '@heroicons/react/outline';
@@ -175,7 +175,9 @@ function TodolistPage() {
                                 <Typography variant="h6" p="1rem 1.5rem" fontWeight="700">태그</Typography>
                                 <Box sx={{ pl: "1rem", pb: "2rem" }}>
                                     {tags?.map(tag => 
-                                        <Chip label={tag?.name} sx={{ mr: "0.5rem" }} onClick={handleTag(tag?.value)} />
+                                        <Button sx={{ mr: "0.5rem", borderRadius: "2rem", backgroundColor: tag?.value === currentTag ? "#E2E8F0" : "#F1F5F9" }} onClick={handleTag(tag?.value)}>
+                                            <Typography fontSize="14px" color={tag?.value !== currentTag ? "#CBD5E1" : "#000"}>{tag?.name}</Typography>
+                                        </Button>
                                     )}
                                 </Box>
                                 
