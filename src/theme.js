@@ -25,9 +25,9 @@ const theme = responsiveFontSizes(createTheme({
             default: "#fff"
         },
         primary: {
-            light: "#FCF9C6",
-            main: "#C7D36F",
-            dark: "#9EB23B"
+            light: "#D9F99D",
+            main: "#84CC16",
+            dark: "#4D7C0F"
         },
         secondary: {
             main: "#E0DECA",
