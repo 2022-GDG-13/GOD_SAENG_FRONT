@@ -5,7 +5,7 @@ import "./font.module.css";
 const theme = responsiveFontSizes(createTheme({
     typography: {
         fontFamily: [
-            "KoPubDotumMedium",
+            "NotoSansKR",
         ].join(','),
         h1: {
             fontWeight: 700
