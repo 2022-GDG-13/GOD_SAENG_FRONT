@@ -1,21 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Typography, Stack } from "@mui/material";
 import { makeStyles, styled } from "@mui/styles";
 import Calendar from "../../components/Calendar";
+import axios from "axios";
 
 function HomePage() {
   const classes = useStyles();
 
-  const [rate, setRate] = useState(65);
+  const [rate, setRate] = useState(0);
 
   const [day, setDay] = useState(undefined);
 
   const handleDay = (day) => (event) => {};
 
+  useEffect(() => {
+    axios.get("http://15.164.228.89:8080/api/v1/task/god-saeng/rate", {
+      params: {
+        uid: 1
+      }
+    }).then(response => {
+      console.log(response.data?.response)
+      setRate(response.data?.response)
+    })
+  }, [])
+
   return (
     <div className={classes.container}>
       <Typography fontSize="24px" style={{ paddingBottom: "20px" }}>
-        <strong>GDG</strong>
+        <strong>자라나는GDG갓생새싹</strong>
         <span style={{ fontWeight: "lighter" }}>
           님
           <br />
