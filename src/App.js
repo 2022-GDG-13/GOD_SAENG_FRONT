@@ -8,6 +8,7 @@ import MainPage from "./pages/main/MainPage";
 import LoginPage from "./pages/login/LoginPage";
 import TodolistPage from "./pages/todolist/TodolistPage";
 import PostPage from "./pages/post/PostPage";
+import RankingPage from "./pages/ranking/RankingPage";
 import NavBar from "./components/NavBar";
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/todolist" element={<TodolistPage />} />
               <Route path="/post" element={<PostPage />} />
+              <Route path="/ranking" element={<RankingPage />} />
               <Route path="/*" element={<NotFound />} />
             </Routes>
             <NavBar />
