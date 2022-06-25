@@ -1,63 +1,84 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { styled } from '@mui/styles';
-import { Box, Link, Typography } from '@mui/material';
-
+import * as React from "react";
+import Box from "@mui/material/Box";
+import BottomNavigation from "@mui/material/BottomNavigation";
+import BottomNavigationAction from "@mui/material/BottomNavigationAction";
+import Paper from "@mui/material/Paper";
+import {
+  HomeIcon,
+  ClipboardListIcon,
+  PencilAltIcon,
+  FireIcon,
+} from "@heroicons/react/solid";
+import { Link, useLocation } from "react-router-dom";
 
 function NavBar() {
-    const user = useSelector(state => state[0]?.user);
+  const ref = React.useRef(null);
 
-    const [bgColor, setBgColor] = useState("black");
-    const [visibility, setVisibility] = useState("flex");
-
-    useEffect(() => {
-        if (window.location.pathname === "/") {
-            setBgColor("black");
-        }
-
-        window.addEventListener('scroll', updateScroll);
-    }, [window.location.pathname]);
-
-    const updateScroll = () => {
-        let scrollPosition = window.scrollY || document.documentElement.scrollTop;
-        if (window.location.pathname === "/") {
-            setBgColor("black");
-            scrollPosition < 1080 ? setBgColor("black") : setBgColor("inherit");
-        }
+  function getPageIndex(route) {
+    switch (route) {
+      case "/":
+        return 0;
+      case "/todolist":
+        return 1;
+      case "/post":
+        return 2;
+      case "/ranking":
+        return 3;
+      default:
+        return 0;
     }
-    
-    const NavBox = styled(Box)({
-        position: "fixed", 
-        zIndex: 9, 
-        display: `${visibility}`, 
-        alignItems: "center",
-        width: "100vw",
-        maxWidth: "100%",
-        height: "5rem",
-    })
-    
-    return (
-        <NavBox sx={{ backgroundColor: bgColor }}>
-            <Link href="/" underline="none" pl={4}>
-                <Typography variant="h6" fontWeight="700" letterSpacing={4} fontFamily="helvetica">LOGO</Typography>
-            </Link>
+  }
 
-            <Box sx={{ width: "100%", display: "flex", justifyContent: "space-between", px: 4 }}>
-                <Box sx={{ pl: "12rem" }}>
-                    <Link href="/" underline="none">
-                        <Typography variant="h6"></Typography>
-                    </Link>
-                </Box>
+  React.useEffect(() => {
+    console.log(value);
+    ref.current.ownerDocument.body.scrollTop = 0;
+  }, []);
 
-                {user?.userEmail ? (
-                    // <Link href={`/profile/${user.userId}`} underline="none" color="#fff">{user?.username}</Link>
-                    <Typography>사용자</Typography>
-                ) : (
-                    <Link href="/login" underline="none" color="#fff" letterSpacing={1}>로그인</Link>
-                )}
-            </Box>
-        </NavBox>
-    )
+  let location = useLocation();
+  const value = getPageIndex(location.pathname)
+
+  return (
+    <Box sx={{ pb: 7 }} ref={ref}>
+      <Paper
+        sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
+        elevation={3}
+      >
+        <BottomNavigation
+          showLabels
+          value={value}
+        >
+          <BottomNavigationAction
+            component={Link}
+            label="홈"
+            icon={<HomeIcon />}
+            to="/"
+            sx={{ py: "10px" }}
+          />
+          <BottomNavigationAction
+            component={Link}
+            label="할 일"
+            to="/todolist"
+            icon={<ClipboardListIcon />}
+            sx={{ py: "10px" }}
+          />
+          <BottomNavigationAction
+            component={Link}
+            label="게시물 작성"
+            to="/post"
+            icon={<PencilAltIcon />}
+            sx={{ py: "10px" }}
+          />
+          <BottomNavigationAction
+            component={Link}
+            label="실시간 랭킹"
+            to="/ranking"
+            icon={<FireIcon />}
+            sx={{ py: "10px" }}
+          />
+        </BottomNavigation>
+      </Paper>
+    </Box>
+  );
 }
 
-export default NavBar
+export default NavBar;
