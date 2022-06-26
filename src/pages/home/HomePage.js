@@ -26,7 +26,7 @@ function HomePage() {
 
   return (
     <div className={classes.container}>
-      <Typography fontSize="24px" style={{ paddingBottom: "20px" }}>
+      <Typography fontSize="24px" style={{ paddingBottom: "30px" }}>
         <strong>자라나는GDG갓생새싹</strong>
         <span style={{ fontWeight: "lighter" }}>
           님
