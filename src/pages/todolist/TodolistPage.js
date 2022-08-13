@@ -32,9 +32,8 @@ function TodolistPage() {
     const [flag, setFlag] = useState(false);
 
     useEffect(() => {
-        // GET tasks
         getTasks();
-    }, [addTask, flag]);
+    }, []);
 
     const getTasks = () => {
         axios({
@@ -59,10 +58,12 @@ function TodolistPage() {
     }
 
     const handleModal = (event) => {
+        if (open) {
+            setTitle("");
+            setDescription("");
+            setImageUrl("");
+        }
         setOpen(!open);
-        setTitle("");
-        setDescription("");
-        setImageUrl("");
     }
 
     const handleCheckbox = (taskId) => (event) => {
@@ -72,22 +73,23 @@ function TodolistPage() {
         })
         .then(response => {
             console.log(response.data?.response);
+            getTasks();
         })
         .catch(error => {
             console.log(error.response);
         });
-        setFlag(!flag);
+        getTasks();
     }
 
-    const handleTitle = (taskId) => (event) => {
+    const handleTitle = (event) => {
         setTitle(event.target.value);
     }
 
-    const handleDescription = (taskId) => (event) => {
+    const handleDescription = (event) => {
         setDescription(event.target.value);
     }
 
-    const handleFileChange = (taskId) => (event) => {
+    const handleFileChange = (event) => {
         event.preventDefault();
 
         let file = event.target.files[0];
@@ -111,9 +113,13 @@ function TodolistPage() {
     }
 
     const handleUploadTask = (taskId) => (event) => {
+        event.preventDefault();
+        
         // TODO: POST
         let method = "post";
         let data;
+ 
+        console.log("upload task", data)
 
         if (taskId) {
             data = {
@@ -144,14 +150,13 @@ function TodolistPage() {
         })
         .then(response => {
             console.log(response.data);
+            setAddTask(false);
+            getTasks();
+            handleModal();
         })
         .catch(error => {
             console.log(error.response);
         })
-
-        setAddTask(false);
-        handleModal();
-
     }
 
     const handleTag = (value) => (event) => {
@@ -164,12 +169,12 @@ function TodolistPage() {
         <div className={classes.container}>
             <Typography variant="h4" pb="1rem">할 일</Typography>
 
-            <Box sx={{ height: "42rem", overflowY: "auto" }}>
+            <Box sx={{ height: "42rem", overflowY: "auto", zIndex: 9 }}>
                 {tasks.map((task, index) =>
                     <Box key={index} sx={{ pb: "0.5rem", pt: "1rem" }}>
                         <Stack direction="row" alignItems="center">
                             <Checkbox checked={task?.checkBox} onChange={handleCheckbox(task?.id)} />
-                            <TextField size="small" variant="standard" fullWidth margin="none" placeholder="입력" value={task?.title} onChange={handleTitle()} />
+                            <TextField size="small" variant="standard" fullWidth margin="none" placeholder="입력" value={task?.title} onChange={handleTitle} />
                             <Box sx={{ pl: "0.5rem" }} onClick={handleModal}>
                                 <ChevronRightIcon style={{ width: "2rem" }} />
                             </Box>
@@ -196,7 +201,7 @@ function TodolistPage() {
                                         <img src={imageUrl ? imageUrl : task.imageUrl} width="100%" />
                                     ) : (
                                         <React.Fragment>
-                                            <input type="file" id="contained-button-file" accept="image/*" onChange={handleFileChange()} style={{ display: "none" }} />
+                                            <input type="file" id="contained-button-file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
                                             <label htmlFor="contained-button-file">
                                                 <Stack alignItems="center" p="4rem">
                                                     <CloudUploadIcon style={{ width: "30px" }} />
@@ -206,7 +211,7 @@ function TodolistPage() {
                                         </React.Fragment>
                                     )}
                                 </Box>
-                                <TextField fullWidth multiline minRows={4} placeholder="글을 작성해주세요" value={task?.description} onChange={handleDescription()} />
+                                <TextField fullWidth multiline minRows={4} placeholder="글을 작성해주세요" value={task?.description} onChange={handleDescription} />
                                 <Typography variant="h6" p="1rem 1.5rem" fontWeight="700">태그</Typography>
                                 <Box sx={{ pl: "1rem", pb: "2rem" }}>
                                     {tags?.map(tag => 
@@ -218,9 +223,11 @@ function TodolistPage() {
                                 
                             </DialogContent>
                             <DialogActions sx={{ justifyContent: "center", p: 0 }}>
-                                <Button variant="contained" fullWidth sx={{ py: "1rem" }} onClick={handleUploadTask(task?.id)}>
-                                    저장
-                                </Button>
+                                {!addTask &&
+                                    <Button variant="contained" fullWidth sx={{ py: "1rem" }} onClick={handleUploadTask(task?.id)}>
+                                        저장
+                                    </Button>
+                                }
                             </DialogActions>
                         </Dialog>
                     </Box>
@@ -229,7 +236,7 @@ function TodolistPage() {
                     <Box sx={{ pb: "0.5rem", pt: "1rem" }}>
                         <Stack direction="row">
                             <Checkbox />
-                            <TextField size="small" variant="standard" fullWidth />
+                            <TextField size="small" variant="standard" fullWidth placeholder="입력" value={title} onChange={handleTitle} />
                             <Box sx={{ pl: "1rem" }} onClick={handleModal}>
                                 <ChevronRightIcon style={{ width: "2rem" }} />
                             </Box>
@@ -256,7 +263,7 @@ function TodolistPage() {
                                         <img src={imageUrl} width="100%" />
                                     ) : (
                                         <Box>
-                                            <input type="file" id="contained-button-file" accept="image/*" onChange={handleFileChange()} style={{ display: "none" }} />
+                                            <input type="file" id="contained-button-file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
                                             <label htmlFor="contained-button-file">
                                                 <Stack alignItems="center" sx={{ backgroudColor: "yellow", p: "4rem" }}>
                                                     <CloudUploadIcon style={{ width: "30px" }} />
@@ -287,7 +294,7 @@ function TodolistPage() {
                 }
             </Box>
 
-            <Box>
+            <Box sx={{ zIndex: 99 }}>
                 <CircleButton className={classes.addTodo} onClick={handleAddTodo}>
                     <PlusIcon style={{ width: "2rem", color: "#fff" }} />
                 </CircleButton>
@@ -310,7 +317,6 @@ const useStyles = makeStyles(theme => ({
         backgroundColor: "#84CC16", 
         position: "relative", 
         bottom: "24px", 
-        right: "20px",
         marginLeft: "auto", 
         width: "40px", 
         height: "40px", 
@@ -323,16 +329,3 @@ const CircleButton = styled("button")({
     display: "flex", 
     alignItems: "center"
 })
-
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-  };
-  

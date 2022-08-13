@@ -6,7 +6,7 @@ import Godsaeng from '../assets/images/Godsaeng.png';
 function Calendar(props) {
     const dayOfWeeks = ["일", "월", "화", "수", "목", "금", "토"];
     const [days, setDays] = useState([
-        {"day": 1, "godsaeng": true},
+        {"day": 1, "godsaeng": false},
         {"day": 2, "godsaeng": false},
         {"day": 3, "godsaeng": false},
         {"day": 4, "godsaeng": false},
@@ -31,7 +31,7 @@ function Calendar(props) {
         {"day": 23, "godsaeng": false},
         {"day": 24, "godsaeng": false},
         {"day": 25, "godsaeng": false},
-        {"day": 26, "godsaeng": false},
+        {"day": 26, "godsaeng": true},
         {"day": 27, "godsaeng": false},
         {"day": 28, "godsaeng": false},
         {"day": 29, "godsaeng": false},

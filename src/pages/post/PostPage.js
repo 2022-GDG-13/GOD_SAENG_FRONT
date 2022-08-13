@@ -5,11 +5,14 @@ import { CloudUploadIcon } from '@heroicons/react/outline';
 import Calendar from '../../components/Calendar';
 import { dateToString } from '../../utils/Format';
 import { XIcon } from '@heroicons/react/solid';
+import axios from 'axios';
+import DetailPage from '../ranking/DetailPage';
 
 
 function PostPage() {
     const classes = useStyles();
     const today = dateToString(new Date());
+    const uid = 1;
 
     const [stage, setStage] = useState(1);
     const [disabled, setDisabled] = useState(true);
@@ -38,16 +41,37 @@ function PostPage() {
         {"id": 3, "date": today, "title": "테니스 치기", "description": "", "imageUrl": "", "checkBox": false, "tag": "SPORT" },
     ]);
 
+    const [detailData, setDetailData] = useState();
+
 
     useEffect(() => {
         if (stage == 2) {
             // TODO: POST day and get tasks
-            
+            getTasks();   
         }
         else if (stage == 3) {
             // TODO: POST post image, title, description
+
         }
     }, [stage]);
+
+    const getTasks = () => {
+        axios({
+            method: 'get',
+            url: `http://15.164.228.89:8080/api/v1/task/daily`,
+            params: {
+                uid: uid,
+                date: today
+            }
+        })
+        .then(response => {
+            console.log(response.data?.response);
+            setTasks(response?.data?.response)
+        })
+        .catch(error => {
+            console.log(error.response);
+        })
+    }
 
     useEffect(() => {
         if (title) {
@@ -58,13 +82,29 @@ function PostPage() {
     const handleFileChange = (taskId) => (event) => {
         event.preventDefault();
 
-        setFile(event.target.files[0]);
+        let file = event.target.files[0];
+        // setFile(event.target.files[0]);
+
+        let formdata = new FormData();
+        formdata.append("img", file)
+
         // TODO:  POST image
         if (taskId) {
-
+            
         }
         else {
-
+            axios({
+                method: 'post',
+                url: `http://15.164.228.89:8080/api/v1/common/img`,
+                data: formdata
+            })
+            .then(response => {
+                console.log(response.data?.response);
+                setImageUrl(response?.data?.response);
+            })
+            .catch(error => {
+                console.log(error.response);
+            })
         }
     }
 
@@ -95,13 +135,54 @@ function PostPage() {
 
         console.log("taskIdList", taskIdList);
 
-        // TODO: POST
+        let data = {
+            "uid": uid,
+            "title": title,
+            "description": description,
+            "imgUrl": imageUrl,
+            "taskIdList": taskIdList
+        }
 
+        // TODO: POST
+        axios({
+            method: 'post',
+            url: `http://15.164.228.89:8080/api/v1/post`,
+            data: data
+        })
+        .then(response => {
+            console.log(response.data?.response);
+            setStage(stage+1);            
+            handleDetail(response.data?.response?.id);
+        })
+        .catch(error => {
+            console.log(error.response);
+        })
     }
 
-    const handleUploadTask = (event) => {
-        // TODO: POST
-        handleModal();
+    const handleUploadTask = (taskId) => (event) => {
+        // TODO: PUT
+        let data = {
+            "taskId": taskId,
+            "title": title,
+            "description": description,
+            "imageUrl": imageUrl,
+            "tag": currentTag
+        }
+        console.log(taskId, data);
+
+        axios({
+            method: "PUT",
+            url: `http://15.164.228.89:8080/api/v1/task`,
+            data: data
+        })
+        .then(response => {
+            console.log(response.data);
+            getTasks();
+            handleModal();
+        })
+        .catch(error => {
+            console.log(error.response);
+        })
     }
 
     const handleTitle = (taskId) => (event) => {
@@ -124,8 +205,22 @@ function PostPage() {
         setHideId([...hideId, taskId]);
     }
 
+    const handleDetail = (postId) => {
+        axios
+        .get(`http://15.164.228.89:8080/api/v1/post/${postId}`)
+        .then((response) => {
+            console.log("detail", response.data?.response);
+            setDetailData(response.data?.response);
+        });
+    }
+
+
     return (
         <div className={classes.container}>
+        
+            {stage === 4  ? (
+                <DetailPage detailData={detailData} />
+            ) : (
             <Box sx={{ height: "45rem", overflowY: "scroll" }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-end" pb="3rem">
                     <Typography variant="h4">게시글 작성</Typography>
@@ -151,7 +246,7 @@ function PostPage() {
                                 <img src={imageUrl} />
                             ) : (
                                 <Box backgroundColor="#F8FAFC" sx={{ border: "1px solid #E2E8F0", borderRadius: "10px", p: "4rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                    <input type="file" id="contained-button-file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
+                                    <input type="file" id="contained-button-file" accept="image/*" onChange={handleFileChange()} style={{ display: "none" }} />
                                     <label htmlFor="contained-button-file">
                                         <Stack alignItems="center">
                                             <CloudUploadIcon style={{ width: "30px" }} />
@@ -160,7 +255,7 @@ function PostPage() {
                                     </label>   
                                 </Box>
                             )}
-                            <TextField fullWidth multiline minRows={13} placeholder="글을 작성해주세요" value={description} onChange={handleDescription} />
+                            <TextField fullWidth multiline minRows={13} placeholder="글을 작성해주세요" value={description} onChange={(handleDescription())} />
                         </Stack>
                     }
 
@@ -171,7 +266,7 @@ function PostPage() {
                                 <Box key={task?.id} sx={{ pb: "0.5rem", pt: "1rem" }}>
                                     <Box sx={{ borderRadius: "10px", border: "1px solid #E2E8F0" }}>
                                         <Stack direction="row" alignItems="center">
-                                            <Checkbox value={task?.checkBox} onChange={handleCheckbox(task?.id)} />
+                                            <Checkbox checked={task?.checkBox} value={task?.checkBox} onChange={handleCheckbox(task?.id)} />
                                             <TextField size="small" variant="standard" fullWidth margin="none" placeholder="입력" value={task?.title} onChange={handleTitle(task?.id)} />
                                             <Box width="1rem" />
                                         </Stack>
@@ -204,7 +299,7 @@ function PostPage() {
                                             </IconButton>
                                         </DialogTitle>
                                         <DialogContent sx={{ p: 0 }}>
-                                            <Box style={{ border: "1px solid #E2E8F0", backgroundColor: "#F8FAFC", borderRadius: "10px 10px 0 0", p: "4rem" }}>
+                                            <Box style={{ border: "1px solid #E2E8F0", backgroundColor: "#F8FAFC", borderRadius: "10px 10px 0 0" }}>
                                                 {task?.imageUrl ? (
                                                     <img src={task.imageUrl} width="100%" />
                                                 ) : (
@@ -242,15 +337,17 @@ function PostPage() {
                     }
                 </Box>
             </Box>
-            
-            {stage == 3 ? (
+            )}
+
+            {stage === 3 ? (
                 <Button className={classes.bottomButton} variant="contained" fullWidth mt="1.5rem" onClick={handleUpload}>
                     <Typography color="#fff">업로드</Typography>
                 </Button>
             ) : (
-                <Button className={classes.bottomButton} variant="contained" fullWidth mt="1.5rem" disabled={disabled} onClick={handleStage}>
-                    <Typography color="#fff">다음</Typography>
-                </Button>
+                stage !== 4 &&
+                    <Button className={classes.bottomButton} variant="contained" fullWidth mt="1.5rem" disabled={disabled} onClick={handleStage}>
+                        <Typography color="#fff">다음</Typography>
+                    </Button>
             )}
         </div>
     )
